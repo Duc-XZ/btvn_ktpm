@@ -8,8 +8,8 @@ Hệ thống gồm hai backend service (`User Service`, `Order Service`) và m�
 
 | Thành phần | Trách nhiệm |
 | --- | --- |
-| Nginx API Gateway | Điểm vào duy nhất; định tuyến `/users` và `/orders`; kiểm tra chữ ký JWT; giới hạn tối đa 10 request/giây theo client; chuyển tiếp request đến backend. |
-| User Service | CRUD/thông tin user; endpoint dashboard; tạo pre-signed URL MinIO cho ảnh đại diện. |
+| Nginx API Gateway | Điểm vào duy nhất; định tuyến `/users` và `/orders`; gọi auth subrequest để kiểm tra JWT; giới hạn tối đa 10 request/giây theo IP nguồn; chuyển tiếp request đến backend. |
+| User Service | CRUD/thông tin user; xác minh JWT cho auth subrequest nội bộ; endpoint dashboard; tạo pre-signed URL MinIO cho ảnh đại diện. |
 | Order Service | CRUD/truy vấn đơn hàng; lọc đơn hàng theo `userId`. |
 | MinIO | Lưu trữ object ảnh; client tải file trực tiếp bằng URL đã ký. |
 | Benchmark | So sánh độ trễ khi gọi endpoint trực tiếp và qua gateway trong cùng điều kiện. |
@@ -34,10 +34,11 @@ Client ──> Nginx Gateway ──> User Service ──> Order Service
 ### JWT và giới hạn tốc độ
 
 - Client gửi `Authorization: Bearer <JWT>`.
-- Gateway xác minh chữ ký và thời hạn token trước khi proxy tới backend.
-- Giới hạn mục tiêu: 10 request/giây cho mỗi địa chỉ client, cấu hình burst rõ ràng và trả `429` khi vượt giới hạn.
+- Nginx gọi endpoint xác minh nội bộ của User Service bằng `auth_request`; chỉ proxy request API khi endpoint trả `2xx`.
+- User Service xác minh chữ ký HS256, `sub`, `exp`, và `nbf` nếu có. Token thiếu, sai chữ ký, hết hạn hoặc chưa có hiệu lực trả `401`.
+- Nginx giới hạn 10 request/giây cho mỗi IP nguồn, không cho phép burst và trả `429` khi vượt giới hạn.
 - Token ký bằng HS256 cho môi trường demo; secret lấy từ biến môi trường, không commit secret vào repo.
-- Cần chốt cách gateway kiểm tra JWT khi triển khai Nginx: njs hoặc một auth endpoint phù hợp với cấu hình Nginx được chọn.
+- `JWT_SECRET` tối thiểu 32 byte được truyền bằng biến môi trường; không lưu secret trong Git.
 
 ### Dashboard aggregation
 

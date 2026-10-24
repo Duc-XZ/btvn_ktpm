@@ -1,6 +1,6 @@
 # Service API contract (step 2)
 
-Each service is an independent Spring Boot application. All responses use JSON. Validation failures return `400 Bad Request`; unknown IDs return `404 Not Found`. These endpoints are internal for now; JWT protection and public gateway routes are added in later steps.
+Each service is an independent Spring Boot application. All responses use JSON. Validation failures return `400 Bad Request`; unknown IDs return `404 Not Found`. Public user and order requests go through the gateway. User Service also exposes `GET /internal/auth/verify` for Nginx auth subrequests; it returns `204` for a valid token or `401` otherwise.
 
 ## User Service
 

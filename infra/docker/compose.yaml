@@ -2,6 +2,8 @@ services:
   user-service:
     build:
       context: ../../services/user-service
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET before starting the stack}
     ports:
       - "127.0.0.1:8081:8081"
 
