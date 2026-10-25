@@ -15,6 +15,7 @@ Base URL: `http://localhost:8081`
 | `PUT` | `/users/{userId}` | Replace a user's name, email, and avatar key. |
 | `DELETE` | `/users/{userId}` | Delete a user; returns `204`. |
 | `GET` | `/dashboard/users/{userId}` | Return one user with that user's orders. |
+| `POST` | `/users/{userId}/avatar/upload-url` | Issue a five-minute MinIO `PUT` URL for an avatar. |
 
 Create/update request:
 
@@ -54,6 +55,16 @@ Dashboard response:
 ```
 
 If the user does not exist, the endpoint returns `404`. If Order Service cannot be reached or returns an error, it returns `503` rather than an incomplete dashboard.
+
+Avatar upload URL request:
+
+```json
+{
+  "contentType": "image/png"
+}
+```
+
+Only `image/jpeg`, `image/png`, and `image/webp` are accepted. The response contains `uploadUrl`, `objectKey`, `expiresInSeconds` (`300`), and `requiredHeaders`. Send a `PUT` directly to `uploadUrl`, include the returned `Content-Type` header, and use the image bytes as the request body. The user record's `avatarKey` is set to `objectKey` when the URL is issued.
 
 ## Order Service
 

@@ -46,6 +46,15 @@ public class UserStore {
         return updated;
     }
 
+    public User updateAvatarKey(String id, String avatarKey) {
+        return users.compute(id, (userId, current) -> {
+            if (current == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            }
+            return new User(current.id(), current.name(), current.email(), avatarKey);
+        });
+    }
+
     public void delete(String id) {
         if (users.remove(id) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
