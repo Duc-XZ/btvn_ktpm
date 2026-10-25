@@ -17,17 +17,18 @@ $env:MINIO_ROOT_PASSWORD = [Convert]::ToBase64String($minioBytes)
 $env:MINIO_PUBLIC_ENDPOINT = "http://localhost:9000"
 $env:MINIO_CORS_ORIGINS = "http://localhost:8080,http://localhost:5173"
 docker compose -f infra/docker/compose.yaml up --build -d
-python scripts/generate_demo_jwt.py --subject u-123
+mvn -q -f benchmarks/benchmark-runner/pom.xml package
+$env:JWT_TOKEN = (java -jar benchmarks/benchmark-runner/target/benchmark-runner-0.1.0-SNAPSHOT.jar --mode=token --subject=u-123)
 ```
 
-The secret must contain at least 32 UTF-8 bytes and is read only by User Service. Do not commit the secret. The printed token is valid for 15 minutes and can be used immediately against the gateway.
+The secret must contain at least 32 UTF-8 bytes and is read only by User Service. Do not commit the secret. The generated token is valid for 15 minutes and can be used immediately against the gateway.
 
-Send the printed token as `Authorization: Bearer <token>`. Missing, malformed, invalid-signature, expired, or not-yet-valid tokens receive `401`. This token helper is for local demonstrations only; it does not authenticate a real user.
+Send the generated token as `Authorization: Bearer <token>`. Missing, malformed, invalid-signature, expired, or not-yet-valid tokens receive `401`. This token helper is for local demonstrations only; it does not authenticate a real user.
 
 For example, keep the token in a PowerShell variable and call through the gateway:
 
 ```powershell
-$token = python scripts/generate_demo_jwt.py --subject u-123
+$token = $env:JWT_TOKEN
 curl.exe -H "Authorization: Bearer $token" http://localhost:8080/users/u-123
 ```
 
@@ -49,7 +50,7 @@ For local development and the later direct-vs-gateway benchmark, the backend por
 To upload an avatar, request a URL with a JWT, then PUT the file bytes to MinIO using the URL and the exact `Content-Type` returned by the API:
 
 ```powershell
-$token = python scripts/generate_demo_jwt.py --subject u-123
+$token = $env:JWT_TOKEN
 $upload = Invoke-RestMethod -Method Post -Uri "http://localhost:8080/users/u-123/avatar/upload-url" -Headers @{ Authorization = "Bearer $token" } -ContentType "application/json" -Body '{"contentType":"image/png"}'
 Invoke-WebRequest -Method Put -Uri $upload.uploadUrl -InFile ".\avatar.png" -ContentType $upload.requiredHeaders.'Content-Type'
 ```
