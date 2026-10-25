@@ -18,4 +18,5 @@ The service listens on `http://localhost:8081`. See [`docs/service-api.md`](../.
 
 - `GET /health`
 - `GET /users` and `GET /users/{userId}`
+- `GET /dashboard/users/{userId}` — user plus that user's orders
 - `POST /users`, `PUT /users/{userId}`, `DELETE /users/{userId}`

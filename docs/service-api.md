@@ -1,4 +1,4 @@
-# Service API contract (step 2)
+# Service API contract
 
 Each service is an independent Spring Boot application. All responses use JSON. Validation failures return `400 Bad Request`; unknown IDs return `404 Not Found`. Public user and order requests go through the gateway. User Service also exposes `GET /internal/auth/verify` for Nginx auth subrequests; it returns `204` for a valid token or `401` otherwise.
 
@@ -14,6 +14,7 @@ Base URL: `http://localhost:8081`
 | `POST` | `/users` | Create a user; returns `201` and `Location`. |
 | `PUT` | `/users/{userId}` | Replace a user's name, email, and avatar key. |
 | `DELETE` | `/users/{userId}` | Delete a user; returns `204`. |
+| `GET` | `/dashboard/users/{userId}` | Return one user with that user's orders. |
 
 Create/update request:
 
@@ -35,6 +36,24 @@ User response:
   "avatarKey": null
 }
 ```
+
+Dashboard response:
+
+```json
+{
+  "user": {
+    "id": "u-123",
+    "name": "Linh Nguyen",
+    "email": "linh@example.com",
+    "avatarKey": null
+  },
+  "orders": [
+    { "id": "o-456", "userId": "u-123", "status": "NEW", "total": 125000.00 }
+  ]
+}
+```
+
+If the user does not exist, the endpoint returns `404`. If Order Service cannot be reached or returns an error, it returns `503` rather than an incomplete dashboard.
 
 ## Order Service
 

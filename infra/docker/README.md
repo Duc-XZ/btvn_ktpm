@@ -28,7 +28,8 @@ The gateway listens on `http://localhost:8080`:
 - `GET /health` — gateway status.
 - `/users` and `/users/**` — routed to User Service.
 - `/orders` and `/orders/**` — routed to Order Service.
-- Both API route groups require a valid HS256 JWT and are limited to 10 requests/second per source IP. Excess requests receive `429`.
+- `/dashboard/users/{userId}` — routed to User Service, which fetches that user's orders.
+- Các API `/users`, `/orders` và dashboard đều cần JWT HS256 hợp lệ, đồng thời bị giới hạn 10 request/giây theo IP nguồn. Request vượt mức nhận `429`.
 
 For local development and the later direct-vs-gateway benchmark, the backend ports are also bound to loopback only:
 

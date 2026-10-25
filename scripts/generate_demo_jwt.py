@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Create a short-lived HS256 token for local gateway demonstrations."""
+"""Tạo JWT HS256 thời hạn ngắn để chạy thử gateway trên máy cá nhân."""
 
 import argparse
 import base64
